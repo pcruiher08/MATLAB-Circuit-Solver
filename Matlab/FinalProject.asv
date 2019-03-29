@@ -1,0 +1,65 @@
+
+promt = {'Vm: ', '\theta v','Im: ', '\theta i','R1: ','R2: ', 'C1: ', 'L1: ','w: '};
+title = 'Circuit Values';
+dims = [1 30];
+definput = {'0','0','0','0','0','0','0','0','0'};
+opts.Interpreter = 'tex';
+answer = inputdlg(promt,title,dims,definput,opts);
+
+Vin = str2double(answer{1});
+thetaIn = str2double(answer{2});
+Iin = str2double(answer{3});
+thetaIin = str2double(answer{4});
+resistor1 = str2double(answer{5});
+resistor2 = str2double(answer{6});
+capacitor1 = str2double(answer{7});
+inductor1 = str2double(answer{8});
+omega = str2double(answer{9});
+
+zc1 = -1i /(omega*capacitor1);
+zl1 = 1i*omega*inductor1;
+
+Vin = Vin * (cos(thetaIn*pi/180) + 1i*sin(thetaIn*pi/180)); 
+Iin = Iin * (cos(thetaIin*pi/180) + 1i*sin(thetaIin*pi/180));
+
+syms nodo1 nodo2
+    equation1 = (Vin - nodo2)/resistor1 + (nodo1 - nodo2)/zc1 == Iin;
+    equation2 = (nodo1-0)/zl1 == (nodo2-nodo1)/zc1 - (nodo1-Vin)/resistor2;
+    %Ix * resistor2 == Vx; 
+    %Ix == (nodo1 - Vin)/resistor2;
+sol = solve([equation1, equation2],[nodo1,nodo2]);
+
+Vx = Vin - sol.nodo1;
+Ix = -Vx/resistor2;
+
+magnitudeOfVx = abs(Vx); 
+angleOfVx = angle(Vx*180/pi);
+magnitudeOfIx = abs(Ix); 
+angleOfIx = angle(Ix*180/pi);
+
+axis = subplot(2,1,1);
+t = linspace(0,3);
+
+Vxequivalent = magnitudeOfVx * cos(omega * t + angleOfVx);
+Ixequivalent = magnitudeOfIx * cos(omega * t + angleOfIx);
+disp('Vx: ');
+disp("Vx = " + double(magnitudeOfVx) + "cos(" +omega+ "t + " + double(angleOfVx) + ")");
+disp('Ix: ');
+disp(double(magnitudeOfIx) + "cos(" +omega+ "t + " + double(angleOfIx) + ")");
+%disp( double(angleOfVx) + ")");
+
+
+plot(axis, t, Vxequivalent);
+ylabel(axis,'Vx');
+xlabel(axis,'time');
+%title(axis, "uno");
+
+axis2 = subplot(2,1,2);
+plot(axis2, t, Ixequivalent);
+ylabel(axis2,'Ix');
+xlabel(axis2,'time');
+%title(axis2, "dos");
+
+
+
+
